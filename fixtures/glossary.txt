@@ -1,0 +1,77 @@
+Project Alpha - Glossary of Terms
+===================================
+
+This glossary defines key terms used across Project Alpha documentation, code, and team communication.
+
+CORE CONCEPTS
+-------------
+
+Event
+  A single data point produced by a sensor or user interaction. Events are serialized as JSON and
+  published to Kafka. Each event has: event_id (UUID), tenant_id, event_type, timestamp (ISO 8601),
+  and payload (JSON blob). Maximum size: 1 MB.
+
+Tenant
+  A paying customer organization. Data is logically isolated by tenant_id. Physical isolation
+  (separate DB schemas) is planned for enterprise tier but not in MVP.
+
+Pipeline
+  The end-to-end flow: Event source → Kafka → Ingestion service → Storage. The pipeline
+  includes validation, deduplication, enrichment, and routing steps.
+
+Ingestion Lag
+  The time between an event being produced (by the client) and confirmed stored (in PostgreSQL
+  or S3). Our SLO target is P95 < 500ms, P99 < 2 seconds.
+
+Dead Letter Queue (DLQ)
+  A dedicated Kafka topic (alpha.dlq) where malformed, duplicate, or unprocessable events
+  are published. The DLQ is monitored; events are either reprocessed or discarded manually.
+
+INFRASTRUCTURE TERMS
+--------------------
+
+Broker
+  A Kafka server node. We run 3 brokers with replication factor 3 for all topics.
+  Brokers are named kafka-0, kafka-1, kafka-2 in the k8s StatefulSet.
+
+Consumer Group
+  A set of ingestion service instances that collectively consume from a Kafka partition set.
+  The consumer group ID is "alpha-ingestion-v1".
+
+Partition
+  A Kafka topic is divided into N partitions for parallelism. The primary topic
+  alpha.events has 24 partitions, allowing up to 24 concurrent consumers.
+
+Replication Factor
+  Number of Kafka broker replicas holding a copy of each partition. Set to 3 for
+  all production topics to survive single-broker failure.
+
+TEAM ABBREVIATIONS
+------------------
+
+SLO  - Service Level Objective (e.g., P95 < 500ms ingestion lag)
+SLA  - Service Level Agreement (customer-facing commitment)
+DORA - DevOps Research and Assessment metrics (deployment frequency, etc.)
+RCA  - Root Cause Analysis (post-incident)
+OKR  - Objective and Key Result (quarterly goal-setting)
+PR   - Pull Request
+DRI  - Directly Responsible Individual
+
+MONITORING TERMS
+----------------
+
+P95 / P99
+  95th and 99th percentile latency. If P95 ingestion lag is 400ms, then 95% of events
+  are stored within 400ms.
+
+Cardinality
+  The number of unique label combinations in a Prometheus metric. High cardinality
+  (e.g., a label per tenant_id) causes memory issues in Prometheus.
+
+Golden Signals
+  The four key metrics for any service: Latency, Traffic, Errors, Saturation (LTES).
+  Our Grafana dashboards display all four.
+
+Burn Rate
+  How fast we are consuming our SLO error budget. A burn rate > 1 means we will exceed
+  the error budget before the window ends.
