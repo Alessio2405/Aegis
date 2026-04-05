@@ -4,10 +4,12 @@
 //! correct provider based on `LlmConfig.provider`.
 //!
 //! Supported providers:
-//!   "ollama"  — local Ollama instance (requires `--features ollama`)
-//!   "openai"  — OpenAI cloud API (api key required, always compiled)
+//!   "ollama"     — local Ollama instance (requires `--features ollama`)
+//!   "openai"     — OpenAI cloud API (api key required, always compiled)
+//!   "anthropic"  — Anthropic Claude API (api key required, always compiled)
 
 pub mod openai;
+pub mod anthropic;
 
 #[cfg(feature = "ollama")]
 pub mod ollama;
@@ -24,7 +26,7 @@ use crate::retrieval::RetrievedChunk;
 pub struct LlmConfig {
     /// Whether model calls are enabled at all.
     pub enabled: bool,
-    /// "ollama" or "openai"
+    /// "ollama", "openai", or "anthropic"
     pub provider: String,
     // Ollama
     pub ollama_url: String,
@@ -32,6 +34,9 @@ pub struct LlmConfig {
     // OpenAI
     pub openai_api_key: String,
     pub openai_model: String,
+    // Anthropic
+    pub anthropic_api_key: String,
+    pub anthropic_model: String,
     // Embeddings
     pub embeddings_enabled: bool,
     /// Model to use for embeddings ("nomic-embed-text" for Ollama, "text-embedding-3-small" for OpenAI).
@@ -52,7 +57,8 @@ pub fn llm_rag(
         ));
     }
     match config.provider.as_str() {
-        "openai" => openai::rag(&config.openai_api_key, &config.openai_model, question, chunks),
+        "openai"     => openai::rag(&config.openai_api_key, &config.openai_model, question, chunks),
+        "anthropic"  => anthropic::rag(&config.anthropic_api_key, &config.anthropic_model, question, chunks),
         _ => llm_rag_ollama(config, question, chunks),
     }
 }
@@ -68,7 +74,8 @@ pub fn llm_chat_multi(
         ));
     }
     match config.provider.as_str() {
-        "openai" => openai::chat_multi(&config.openai_api_key, &config.openai_model, messages),
+        "openai"     => openai::chat_multi(&config.openai_api_key, &config.openai_model, messages),
+        "anthropic"  => anthropic::chat_multi(&config.anthropic_api_key, &config.anthropic_model, messages),
         _ => llm_chat_multi_ollama(config, messages),
     }
 }
@@ -86,7 +93,8 @@ pub fn llm_chat_multi_stream(
         ));
     }
     match config.provider.as_str() {
-        "openai" => openai::chat_multi_stream(&config.openai_api_key, &config.openai_model, messages, on_token),
+        "openai"     => openai::chat_multi_stream(&config.openai_api_key, &config.openai_model, messages, on_token),
+        "anthropic"  => anthropic::chat_multi_stream(&config.anthropic_api_key, &config.anthropic_model, messages, on_token),
         _ => llm_chat_multi_stream_ollama(config, messages, on_token),
     }
 }

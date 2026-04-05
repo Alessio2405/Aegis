@@ -418,6 +418,8 @@ fn run_agent(bot: &BotSharedState, agent_name: &str, input: &str) -> String {
         embed_model,
         openai_api_key:     get_s("openai_api_key"),
         openai_model:       get_s("openai_model"),
+        anthropic_api_key:  get_s("anthropic_api_key"),
+        anthropic_model:    get_s("anthropic_model"),
     };
 
     let crypto = crate::crypto::CryptoContext::from_key_bytes(raw_key);

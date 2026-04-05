@@ -164,7 +164,7 @@ export default function Settings() {
               <>
                 {/* Provider selector */}
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                  {(['ollama', 'openai'] as const).map((p) => (
+                  {(['ollama', 'openai', 'anthropic'] as const).map((p) => (
                     <button
                       key={p}
                       type="button"
@@ -172,27 +172,27 @@ export default function Settings() {
                       style={{ fontSize: 12, flex: 1 }}
                       onClick={() => setForm({ ...form, model_provider: p })}
                     >
-                      {p === 'ollama' ? '🦙 Ollama (local)' : '✦ OpenAI (cloud)'}
+                      {p === 'ollama' ? '🦙 Ollama' : p === 'openai' ? '✦ OpenAI' : '◆ Anthropic'}
                     </button>
                   ))}
                 </div>
 
-                {form.model_provider === 'openai' ? (
-                  <div style={{
-                    padding: '10px 12px', background: 'rgba(251,191,36,0.08)',
-                    border: '1px solid rgba(251,191,36,0.3)', borderRadius: 'var(--radius-sm)',
-                    fontSize: 12, color: 'var(--warning)',
-                  }}>
-                    ⚠ OpenAI mode sends document excerpts to the OpenAI API. Ensure you're comfortable
-                    with your data leaving the device.
-                  </div>
-                ) : (
+                {form.model_provider === 'ollama' && (
                   <div style={{
                     padding: '10px 12px', background: 'rgba(251,191,36,0.08)',
                     border: '1px solid rgba(251,191,36,0.3)', borderRadius: 'var(--radius-sm)',
                     fontSize: 12, color: 'var(--warning)',
                   }}>
                     ⚠ Ollama mode sends document text to the local Ollama endpoint. Ensure Ollama is running.
+                  </div>
+                )}
+                {form.model_provider !== 'ollama' && (
+                  <div style={{
+                    padding: '10px 12px', background: 'rgba(251,191,36,0.08)',
+                    border: '1px solid rgba(251,191,36,0.3)', borderRadius: 'var(--radius-sm)',
+                    fontSize: 12, color: 'var(--warning)',
+                  }}>
+                    ⚠ Cloud mode sends document excerpts to {form.model_provider === 'openai' ? 'OpenAI' : 'Anthropic'}. Ensure you're comfortable with your data leaving the device.
                   </div>
                 )}
               </>
@@ -251,11 +251,80 @@ export default function Settings() {
                   value={form.openai_model}
                   onChange={(e) => setForm({ ...form, openai_model: e.target.value })}
                 >
-                  <option value="gpt-4o-mini">gpt-4o-mini (fast, cheap)</option>
-                  <option value="gpt-4o">gpt-4o (best quality)</option>
-                  <option value="gpt-4-turbo">gpt-4-turbo</option>
-                  <option value="gpt-3.5-turbo">gpt-3.5-turbo (legacy)</option>
+                  <optgroup label="GPT-5 (Latest)">
+                    <option value="gpt-5.4">gpt-5.4</option>
+                    <option value="gpt-5.3">gpt-5.3</option>
+                  </optgroup>
+                  <optgroup label="GPT-4.1">
+                    <option value="gpt-4.1">gpt-4.1 (best quality)</option>
+                    <option value="gpt-4.1-mini">gpt-4.1-mini (fast, cheap)</option>
+                    <option value="gpt-4.1-nano">gpt-4.1-nano (fastest)</option>
+                  </optgroup>
+                  <optgroup label="GPT-4.5">
+                    <option value="gpt-4.5-preview">gpt-4.5-preview</option>
+                  </optgroup>
+                  <optgroup label="Reasoning (o-series)">
+                    <option value="o4-mini">o4-mini (fast reasoning)</option>
+                    <option value="o3">o3 (best reasoning)</option>
+                    <option value="o1">o1</option>
+                  </optgroup>
+                  <optgroup label="GPT-4o">
+                    <option value="gpt-4o">gpt-4o</option>
+                    <option value="gpt-4o-mini">gpt-4o-mini</option>
+                  </optgroup>
+                  <optgroup label="Legacy">
+                    <option value="gpt-4-turbo">gpt-4-turbo</option>
+                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                  </optgroup>
                 </select>
+              </div>
+            </div>
+          )}
+
+          {/* ── Anthropic config ── */}
+          {form.model_enabled && form.model_provider === 'anthropic' && (
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>◆ Anthropic Configuration</div>
+              <div className="form-group">
+                <label className="form-label">API Key</label>
+                <input
+                  className="form-input"
+                  type="password"
+                  value={form.anthropic_api_key}
+                  onChange={(e) => setForm({ ...form, anthropic_api_key: e.target.value })}
+                  placeholder="sk-ant-…"
+                />
+                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+                  Stored locally in the vault DB. Get yours at console.anthropic.com.
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Model</label>
+                <select
+                  className="form-input"
+                  value={form.anthropic_model}
+                  onChange={(e) => setForm({ ...form, anthropic_model: e.target.value })}
+                >
+                  <optgroup label="Claude 4 (Latest)">
+                    <option value="claude-opus-4-6">claude-opus-4-6 (most capable)</option>
+                    <option value="claude-sonnet-4-6">claude-sonnet-4-6 (best balance)</option>
+                  </optgroup>
+                  <optgroup label="Claude 3.7">
+                    <option value="claude-3-7-sonnet-20250219">claude-3-7-sonnet (extended thinking)</option>
+                  </optgroup>
+                  <optgroup label="Claude 3.5">
+                    <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>
+                    <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (fast, cheap)</option>
+                    <option value="claude-3-5-haiku-20241022">claude-3-5-haiku</option>
+                  </optgroup>
+                  <optgroup label="Claude 3 (Legacy)">
+                    <option value="claude-3-opus-20240229">claude-3-opus</option>
+                    <option value="claude-3-haiku-20240307">claude-3-haiku</option>
+                  </optgroup>
+                </select>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4 }}>
+                  Note: Anthropic does not provide embedding models. Embeddings will use Ollama if enabled.
+                </div>
               </div>
             </div>
           )}

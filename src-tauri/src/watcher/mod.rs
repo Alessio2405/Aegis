@@ -246,5 +246,7 @@ fn load_llm_config(conn: &rusqlite::Connection) -> crate::connectors::LlmConfig 
         embed_model,
         openai_api_key:     get("openai_api_key"),
         openai_model:       get("openai_model"),
+        anthropic_api_key:  get("anthropic_api_key"),
+        anthropic_model:    get("anthropic_model"),
     }
 }

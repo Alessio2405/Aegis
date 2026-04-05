@@ -142,6 +142,9 @@ pub struct AppSettings {
     // OpenAI
     pub openai_api_key: String,
     pub openai_model: String,
+    // Anthropic
+    pub anthropic_api_key: String,
+    pub anthropic_model: String,
     // Telegram bot
     pub telegram_enabled: bool,
     pub telegram_token: String,
@@ -179,6 +182,8 @@ pub fn get_settings(state: State<AppState>) -> AppResult<AppSettings> {
         embeddings_enabled:       db::get_setting(&db, "embeddings_enabled")?.as_deref() == Some("true"),
         openai_api_key:           db::get_setting(&db, "openai_api_key")?.unwrap_or_default(),
         openai_model:             db::get_setting(&db, "openai_model")?.unwrap_or_else(|| "gpt-4o-mini".into()),
+        anthropic_api_key:        db::get_setting(&db, "anthropic_api_key")?.unwrap_or_default(),
+        anthropic_model:          db::get_setting(&db, "anthropic_model")?.unwrap_or_else(|| "claude-sonnet-4-6".into()),
         telegram_enabled:         db::get_setting(&db, "telegram_enabled")?.as_deref() == Some("true"),
         telegram_token:           db::get_setting(&db, "telegram_token")?.unwrap_or_default(),
         telegram_chat_id:         db::get_setting(&db, "telegram_chat_id")?.unwrap_or_default(),
@@ -210,6 +215,8 @@ pub fn update_settings(settings: AppSettings, state: State<AppState>) -> AppResu
     db::set_setting(&db, "embeddings_enabled",      if settings.embeddings_enabled { "true" } else { "false" })?;
     db::set_setting(&db, "openai_api_key",          &settings.openai_api_key)?;
     db::set_setting(&db, "openai_model",            &settings.openai_model)?;
+    db::set_setting(&db, "anthropic_api_key",       &settings.anthropic_api_key)?;
+    db::set_setting(&db, "anthropic_model",         &settings.anthropic_model)?;
     db::set_setting(&db, "telegram_enabled",         if settings.telegram_enabled { "true" } else { "false" })?;
     db::set_setting(&db, "telegram_token",           &settings.telegram_token)?;
     db::set_setting(&db, "telegram_chat_id",         &settings.telegram_chat_id)?;
@@ -1174,6 +1181,8 @@ fn load_llm_config(conn: &rusqlite::Connection) -> crate::connectors::LlmConfig 
         embed_model,
         openai_api_key:     get("openai_api_key"),
         openai_model:       get("openai_model"),
+        anthropic_api_key:  get("anthropic_api_key"),
+        anthropic_model:    get("anthropic_model"),
     }
 }
 

@@ -100,6 +100,9 @@ export interface AppSettings {
   // OpenAI
   openai_api_key: string;
   openai_model: string;
+  // Anthropic
+  anthropic_api_key: string;
+  anthropic_model: string;
   // Telegram bot
   telegram_enabled: boolean;
   telegram_token: string;
