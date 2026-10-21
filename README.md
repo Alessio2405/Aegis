@@ -105,7 +105,7 @@ sudo apt update && sudo apt install -y \
 #### Clone and run
 
 ```bash
-git clone https://github.com/your-org/aegis.git
+git clone https://github.com/Alessio2405/Aegis
 cd aegis
 npm install
 npm run tauri:dev
